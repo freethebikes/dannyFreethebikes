@@ -4,10 +4,10 @@ public sealed record Skill
 {
     public Guid Id { get; init; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
-    public string Name { get; init; } = string.Empty;
-    public string Category { get; init; } = string.Empty;
-    public string ProficiencyLabel { get; init; } = string.Empty;
-    public int SortOrder { get; init; }
-    public bool Published { get; init; }
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string ProficiencyLabel { get; set; } = string.Empty;
+    public int SortOrder { get; set; }
+    public bool Published { get; set; }
 }

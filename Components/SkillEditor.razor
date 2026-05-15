@@ -29,7 +29,7 @@ else
         <div class="form-actions">
             <button class="primary" @onclick="Save">Save</button>
             <button class="secondary" @onclick="Cancel">Cancel</button>
-            <button class="secondary" @onclick="Delete" disabled="@Skill.Id == Guid.Empty">Delete</button>
+            <button class="secondary" @onclick="Delete" disabled="@(Skill.Id == Guid.Empty)">Delete</button>
         </div>
     </div>
 }

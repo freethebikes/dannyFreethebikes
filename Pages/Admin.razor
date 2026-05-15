@@ -27,12 +27,12 @@ else
 {
     <AdminLayout>
         <div class="admin-tabs">
-            <button class="tab-button @(activeTab == "profile" ? "active" : "")" @onclick="() => SelectTab("profile")">Profile</button>
-            <button class="tab-button @(activeTab == "projects" ? "active" : "")" @onclick="() => SelectTab("projects")">Projects</button>
-            <button class="tab-button @(activeTab == "photos" ? "active" : "")" @onclick="() => SelectTab("photos")">Photos</button>
-            <button class="tab-button @(activeTab == "skills" ? "active" : "")" @onclick="() => SelectTab("skills")">Skills</button>
-            <button class="tab-button @(activeTab == "notes" ? "active" : "")" @onclick="() => SelectTab("notes")">Notes</button>
-            <button class="tab-button @(activeTab == "settings" ? "active" : "")" @onclick="() => SelectTab("settings")">Settings</button>
+            <button class='@GetTabClass("profile")' @onclick='() => SelectTab("profile")'>Profile</button>
+            <button class='@GetTabClass("projects")' @onclick='() => SelectTab("projects")'>Projects</button>
+            <button class='@GetTabClass("photos")' @onclick='() => SelectTab("photos")'>Photos</button>
+            <button class='@GetTabClass("skills")' @onclick='() => SelectTab("skills")'>Skills</button>
+            <button class='@GetTabClass("notes")' @onclick='() => SelectTab("notes")'>Notes</button>
+            <button class='@GetTabClass("settings")' @onclick='() => SelectTab("settings")'>Settings</button>
         </div>
 
         @if (!string.IsNullOrEmpty(message))
@@ -188,6 +188,9 @@ else
         activeTab = tab;
         message = null;
     }
+
+    private string GetTabClass(string tab)
+        => activeTab == tab ? "tab-button active" : "tab-button";
 
     private void CreateProject() => editingProject = new Project { Id = Guid.NewGuid(), Published = false, SortOrder = projects.Count + 1 };
     private void EditProject(Project project) => editingProject = project with { };
