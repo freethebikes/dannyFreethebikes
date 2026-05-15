@@ -1,0 +1,13 @@
+@using FreethebikesSite.Models
+
+<div class="note-card">
+    <div class="note-content">
+        <h3>@Note.Title</h3>
+        <p class="small-text">@Note.Date:yyyy-MM-dd · @Note.Tags</p>
+        <p>@Note.ShortNote</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Note Note { get; set; } = new();
+}

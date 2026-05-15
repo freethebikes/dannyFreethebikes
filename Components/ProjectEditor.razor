@@ -1,0 +1,71 @@
+@using FreethebikesSite.Models
+
+@if (Project?.Id == Guid.Empty)
+{
+    <p>Select a project or create a new one to edit details.</p>
+}
+else
+{
+    <div class="form-panel">
+        <div class="form-field">
+            <label>Title</label>
+            <input @bind="Project.Title" />
+        </div>
+        <div class="form-field">
+            <label>Slug</label>
+            <input @bind="Project.Slug" placeholder="surf-forecast-reality-check" />
+        </div>
+        <div class="form-field">
+            <label>Short description</label>
+            <textarea rows="3" @bind="Project.ShortDescription"></textarea>
+        </div>
+        <div class="form-field">
+            <label>Long description</label>
+            <textarea rows="4" @bind="Project.LongDescription"></textarea>
+        </div>
+        <div class="form-field">
+            <label>Status</label>
+            <input @bind="Project.Status" />
+        </div>
+        <div class="form-field">
+            <label>Tags</label>
+            <input @bind="Project.Tags" />
+        </div>
+        <div class="form-field">
+            <label>Project URL</label>
+            <input @bind="Project.ProjectUrl" />
+        </div>
+        <div class="form-field">
+            <label>GitHub URL</label>
+            <input @bind="Project.GitHubUrl" />
+        </div>
+        <div class="form-field">
+            <label>Cover image URL</label>
+            <input @bind="Project.CoverImage" placeholder="images/placeholder.svg" />
+        </div>
+        <div class="form-field">
+            <label>Sort order</label>
+            <input type="number" @bind="Project.SortOrder" />
+        </div>
+        <div class="form-field checkbox-field">
+            <label><input type="checkbox" @bind="Project.Featured" /> Featured</label>
+            <label><input type="checkbox" @bind="Project.Published" /> Published</label>
+        </div>
+        <div class="form-actions">
+            <button class="primary" @onclick="Save">Save</button>
+            <button class="secondary" @onclick="Cancel">Cancel</button>
+            <button class="secondary" @onclick="Delete" disabled="@Project.Id == Guid.Empty">Delete</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Project Project { get; set; } = new();
+    [Parameter] public EventCallback<Project> OnSaved { get; set; }
+    [Parameter] public EventCallback<Project> OnDeleted { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private Task Save() => OnSaved.InvokeAsync(Project);
+    private Task Cancel() => OnCancel.InvokeAsync();
+    private Task Delete() => OnDeleted.InvokeAsync(Project);
+}

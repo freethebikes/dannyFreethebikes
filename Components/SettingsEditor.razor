@@ -1,0 +1,60 @@
+@using FreethebikesSite.Models
+
+@if (Settings?.Id == Guid.Empty)
+{
+    <p>No settings loaded.</p>
+}
+else
+{
+    <div class="form-panel">
+        <div class="form-field">
+            <label>Homepage headline</label>
+            <input @bind="Settings.HomepageHeadline" />
+        </div>
+        <div class="form-field">
+            <label>Homepage subheadline</label>
+            <textarea rows="3" @bind="Settings.HomepageSubheadline"></textarea>
+        </div>
+        <div class="form-field">
+            <label>Featured project count</label>
+            <input type="number" @bind="Settings.FeaturedProjectCount" />
+        </div>
+        <div class="form-field checkbox-field">
+            <label><input type="checkbox" @bind="Settings.ShowFeaturedProjects" /> Show featured projects</label>
+            <label><input type="checkbox" @bind="Settings.ShowSkills" /> Show skills</label>
+        </div>
+        <div class="form-field checkbox-field">
+            <label><input type="checkbox" @bind="Settings.ShowFieldNotes" /> Show field notes</label>
+            <label><input type="checkbox" @bind="Settings.ShowPhotos" /> Show photos</label>
+        </div>
+        <div class="form-field checkbox-field">
+            <label><input type="checkbox" @bind="Settings.ShowInterests" /> Show interests</label>
+            <label><input type="checkbox" @bind="Settings.ShowPrinciples" /> Show principles</label>
+        </div>
+        <div class="form-field checkbox-field">
+            <label><input type="checkbox" @bind="Settings.ShowContact" /> Show contact</label>
+        </div>
+        <div class="form-field">
+            <label>Status text</label>
+            <input @bind="Settings.StatusText" />
+        </div>
+        <div class="form-field">
+            <label>Mode text</label>
+            <input @bind="Settings.ModeText" />
+        </div>
+        <div class="form-field">
+            <label>Signal text</label>
+            <input @bind="Settings.SignalText" />
+        </div>
+        <div class="form-actions">
+            <button class="primary" @onclick="Save">Save</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public SiteSettings Settings { get; set; } = new();
+    [Parameter] public EventCallback<SiteSettings> OnSaved { get; set; }
+
+    private Task Save() => OnSaved.InvokeAsync(Settings);
+}

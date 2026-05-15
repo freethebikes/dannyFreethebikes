@@ -1,0 +1,87 @@
+@using FreethebikesSite.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject IPhotoService PhotoService
+
+@if (Photo?.Id == Guid.Empty)
+{
+    <p>Select a photo or create a new image card to update it.</p>
+}
+else
+{
+    <div class="form-panel">
+        <div class="form-field">
+            <label>Title</label>
+            <input @bind="Photo.Title" />
+        </div>
+        <div class="form-field">
+            <label>Caption</label>
+            <textarea rows="3" @bind="Photo.Caption"></textarea>
+        </div>
+        <div class="form-field">
+            <label>Alt text</label>
+            <input @bind="Photo.AltText" />
+        </div>
+        <div class="form-field">
+            <label>Category</label>
+            <input @bind="Photo.Category" />
+        </div>
+        <div class="form-field">
+            <label>Image upload</label>
+            <InputFile OnChange="UploadImage" />
+            @if (!string.IsNullOrWhiteSpace(Photo.ImageUrl))
+            {
+                <img src="@Photo.ImageUrl" alt="@Photo.AltText" class="preview-image" />
+            }
+        </div>
+        <div class="form-field">
+            <label>Sort order</label>
+            <input type="number" @bind="Photo.SortOrder" />
+        </div>
+        <div class="form-field checkbox-field">
+            <label><input type="checkbox" @bind="Photo.Published" /> Published</label>
+        </div>
+        <div class="form-actions">
+            <button class="primary" @onclick="Save">Save</button>
+            <button class="secondary" @onclick="Cancel">Cancel</button>
+            <button class="secondary" @onclick="Delete" disabled="@Photo.Id == Guid.Empty">Delete</button>
+        </div>
+        @if (!string.IsNullOrEmpty(uploadMessage))
+        {
+            <div class="message success">@uploadMessage</div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public Photo Photo { get; set; } = new();
+    [Parameter] public EventCallback<Photo> OnSaved { get; set; }
+    [Parameter] public EventCallback<Photo> OnDeleted { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private string? uploadMessage;
+
+    private async Task UploadImage(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        if (file == null)
+        {
+            return;
+        }
+
+        await using var stream = file.OpenReadStream(5_000_000);
+        var uri = await PhotoService.UploadPhotoAsync(stream, file.Name, file.ContentType);
+        if (!string.IsNullOrWhiteSpace(uri))
+        {
+            Photo = Photo with { ImageUrl = uri };
+            uploadMessage = "Image uploaded and attached.";
+        }
+        else
+        {
+            uploadMessage = "Upload failed. Check Supabase configuration.";
+        }
+    }
+
+    private Task Save() => OnSaved.InvokeAsync(Photo);
+    private Task Cancel() => OnCancel.InvokeAsync();
+    private Task Delete() => OnDeleted.InvokeAsync(Photo);
+}

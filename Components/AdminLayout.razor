@@ -1,0 +1,27 @@
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<div class="panel-block">
+    <div class="admin-header">
+        <div>
+            <h2>Admin dashboard</h2>
+            <p class="small-text">Use the admin panel to publish, unpublish, and manage content for the public homepage.</p>
+        </div>
+        <div class="admin-actions">
+            <button class="secondary" @onclick="GoHome">View site</button>
+            <button class="primary" @onclick="Logout">Sign out</button>
+        </div>
+    </div>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private void GoHome() => NavigationManager.NavigateTo("/");
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        NavigationManager.NavigateTo("/admin/login");
+    }
+}

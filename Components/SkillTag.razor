@@ -1,0 +1,9 @@
+@using FreethebikesSite.Models
+
+<span class="secondary" style="padding: 8px 12px; border-radius: 999px; font-size: 0.95rem;">
+    @Skill.Name · @Skill.ProficiencyLabel
+</span>
+
+@code {
+    [Parameter] public Skill Skill { get; set; } = new();
+}

@@ -1,0 +1,53 @@
+@using FreethebikesSite.Models
+
+@if (Profile?.Id == Guid.Empty)
+{
+    <p>No profile loaded.</p>
+}
+else
+{
+    <div class="form-panel">
+        <div class="form-field">
+            <label>Name</label>
+            <input @bind="Profile.Name" />
+        </div>
+        <div class="form-field">
+            <label>Handle</label>
+            <input @bind="Profile.Handle" />
+        </div>
+        <div class="form-field">
+            <label>Tagline</label>
+            <input @bind="Profile.Tagline" />
+        </div>
+        <div class="form-field">
+            <label>Short bio</label>
+            <textarea rows="3" @bind="Profile.ShortBio"></textarea>
+        </div>
+        <div class="form-field">
+            <label>Hero intro</label>
+            <textarea rows="3" @bind="Profile.HeroIntro"></textarea>
+        </div>
+        <div class="form-field">
+            <label>Email</label>
+            <input @bind="Profile.Email" />
+        </div>
+        <div class="form-field">
+            <label>GitHub link</label>
+            <input @bind="Profile.GitHubLink" />
+        </div>
+        <div class="form-field">
+            <label>LinkedIn link</label>
+            <input @bind="Profile.LinkedInLink" />
+        </div>
+        <div class="form-actions">
+            <button class="primary" @onclick="Save">Save</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Profile Profile { get; set; } = new();
+    [Parameter] public EventCallback<Profile> OnSaved { get; set; }
+
+    private Task Save() => OnSaved.InvokeAsync(Profile);
+}

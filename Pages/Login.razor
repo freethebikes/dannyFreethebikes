@@ -1,0 +1,56 @@
+@page "/admin/login"
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Admin login</PageTitle>
+
+<div class="auth-shell">
+    <div class="panel-block form-panel">
+        <h1>Admin sign in</h1>
+        <p>Use your Supabase admin credentials to open the lab notebook panel.</p>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="message error">@errorMessage</div>
+        }
+
+        <div class="form-field">
+            <label>Email</label>
+            <input @bind="email" placeholder="you@example.com" />
+        </div>
+        <div class="form-field">
+            <label>Password</label>
+            <input type="password" @bind="password" placeholder="Password" />
+        </div>
+
+        <button class="primary" @onclick="HandleLogin" disabled="@submitting">Sign in</button>
+        <button class="secondary" @onclick="GoHome">Back to site</button>
+    </div>
+</div>
+
+@code {
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private bool submitting;
+    private string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        submitting = true;
+        errorMessage = null;
+
+        var success = await AuthService.LoginAsync(email.Trim(), password);
+        if (success)
+        {
+            NavigationManager.NavigateTo("/admin");
+        }
+        else
+        {
+            errorMessage = "Login failed. Check credentials and try again.";
+        }
+
+        submitting = false;
+    }
+
+    private void GoHome() => NavigationManager.NavigateTo("/");
+}

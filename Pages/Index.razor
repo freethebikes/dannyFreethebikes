@@ -1,0 +1,118 @@
+@page "/"
+@inject IProfileService ProfileService
+@inject IProjectService ProjectService
+@inject IPhotoService PhotoService
+@inject ISkillService SkillService
+@inject INoteService NoteService
+@inject ISiteSettingsService SiteSettingsService
+
+<PageTitle>freethebikes — Lab notebook</PageTitle>
+
+@if (loading)
+{
+    <div class="spinner-shell">Loading the notebook...</div>
+}
+else
+{
+    <Hero Profile="profile" Settings="siteSettings" />
+
+    <Section Title="Featured projects" Subtitle="The current pile of useful experiments and work-in-progress." HideWhenEmpty="!featuredProjects.Any()">
+        <div class="card-grid">
+            @foreach (var project in featuredProjects.Take(siteSettings.FeaturedProjectCount))
+            {
+                <ProjectCard Project="project" />
+            }
+        </div>
+    </Section>
+
+    <Section Title="Skills" Subtitle="Tools, models, and strange domains I keep returning to." HideWhenEmpty="!skillGroups.Any()">
+        <div class="flex-wrap gap-2">
+            @foreach (var group in skillGroups)
+            {
+                <div class="skill-group">
+                    <h3>@group.Key</h3>
+                    <div class="tag-row">
+                        @foreach (var skill in group.Value)
+                        {
+                            <SkillTag Skill="skill" />
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </Section>
+
+    <Section Title="Field notes" Subtitle="Short notes, observations, and useful reminders from the garage." HideWhenEmpty="notes.Any()">
+        <div class="card-grid">
+            @foreach (var note in notes.Take(6))
+            {
+                <FieldNoteCard Note="note" />
+            }
+        </div>
+    </Section>
+
+    <Section Title="Photos" Subtitle="Visual references, progress shots, and simple in-between moments." HideWhenEmpty="photos.Any()">
+        <div class="photo-grid">
+            @foreach (var photo in photos.Take(8))
+            {
+                <PhotoCard Photo="photo" />
+            }
+        </div>
+    </Section>
+
+    <Section Title="Current interests" Subtitle="What I am reading, testing, or building right now.">
+        <div class="panel-block white-box">
+            <ul class="list-clean">
+                <li>Surf forecast validation with Python and Postgres</li>
+                <li>Offline-first toddler pause tools</li>
+                <li>Local AI coding setups with Ollama and agentic workflows</li>
+                <li>Vintage RV systems troubleshooting and documentation</li>
+                <li>Blazor native tooling for small web apps</li>
+            </ul>
+        </div>
+    </Section>
+
+    <Section Title="Principles" Subtitle="How I think about projects, tools, and the next thing to try.">
+        <div class="panel-block white-box">
+            <ul class="list-clean">
+                <li>Ship the useful experiment, not the polished homepage.</li>
+                <li>Keep views readable without too much flash.</li>
+                <li>If you can’t explain the idea with a sentence, it needs another iteration.</li>
+                <li>Published content is the only thing the public sees.</li>
+            </ul>
+        </div>
+    </Section>
+
+    <Section Title="Contact" Subtitle="Signal, not noise.">
+        <div class="panel-block white-box">
+            <p>Some people have a portfolio. I have a pile of half-solved problems, a working theory, and a folder full of notes. This site is where the useful ones go.</p>
+            <p>Email: <a href="mailto:@profile.Email">@profile.Email</a></p>
+            <p>GitHub: <a href="@profile.GitHubLink" target="_blank">@profile.GitHubLink</a></p>
+            <p>LinkedIn: <a href="@profile.LinkedInLink" target="_blank">@profile.LinkedInLink</a></p>
+        </div>
+    </Section>
+}
+
+@code {
+    private bool loading = true;
+    private Profile profile = new();
+    private SiteSettings siteSettings = new();
+    private List<Project> featuredProjects = new();
+    private List<Skill> skills = new();
+    private List<Note> notes = new();
+    private List<Photo> photos = new();
+    private Dictionary<string, List<Skill>> skillGroups = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        profile = await ProfileService.GetProfileAsync();
+        siteSettings = await SiteSettingsService.GetSettingsAsync();
+        var projects = await ProjectService.GetPublicProjectsAsync();
+        featuredProjects = projects.Where(p => p.Featured && p.Published).OrderBy(p => p.SortOrder).ToList();
+        skills = (await SkillService.GetPublicSkillsAsync()).OrderBy(s => s.SortOrder).ToList();
+        notes = (await NoteService.GetPublicNotesAsync()).OrderByDescending(n => n.Date).ToList();
+        photos = (await PhotoService.GetPublicPhotosAsync()).OrderBy(p => p.SortOrder).ToList();
+        skillGroups = skills.GroupBy(s => s.Category).ToDictionary(g => g.Key, g => g.ToList());
+        loading = false;
+    }
+}

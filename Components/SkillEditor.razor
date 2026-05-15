@@ -1,0 +1,46 @@
+@using FreethebikesSite.Models
+
+@if (Skill?.Id == Guid.Empty)
+{
+    <p>Select a skill or create a new entry.</p>
+}
+else
+{
+    <div class="form-panel">
+        <div class="form-field">
+            <label>Name</label>
+            <input @bind="Skill.Name" />
+        </div>
+        <div class="form-field">
+            <label>Category</label>
+            <input @bind="Skill.Category" />
+        </div>
+        <div class="form-field">
+            <label>Proficiency label</label>
+            <input @bind="Skill.ProficiencyLabel" />
+        </div>
+        <div class="form-field">
+            <label>Sort order</label>
+            <input type="number" @bind="Skill.SortOrder" />
+        </div>
+        <div class="form-field checkbox-field">
+            <label><input type="checkbox" @bind="Skill.Published" /> Published</label>
+        </div>
+        <div class="form-actions">
+            <button class="primary" @onclick="Save">Save</button>
+            <button class="secondary" @onclick="Cancel">Cancel</button>
+            <button class="secondary" @onclick="Delete" disabled="@Skill.Id == Guid.Empty">Delete</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Skill Skill { get; set; } = new();
+    [Parameter] public EventCallback<Skill> OnSaved { get; set; }
+    [Parameter] public EventCallback<Skill> OnDeleted { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private Task Save() => OnSaved.InvokeAsync(Skill);
+    private Task Cancel() => OnCancel.InvokeAsync();
+    private Task Delete() => OnDeleted.InvokeAsync(Skill);
+}

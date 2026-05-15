@@ -1,0 +1,14 @@
+@using FreethebikesSite.Models
+
+<div class="photo-card">
+    <img src="@Photo.ImageUrl" alt="@Photo.AltText" />
+    <div class="card-content">
+        <h3>@Photo.Title</h3>
+        <p>@Photo.Caption</p>
+        <p class="small-text">@Photo.Category</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Photo Photo { get; set; } = new();
+}

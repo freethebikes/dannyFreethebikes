@@ -1,0 +1,17 @@
+<div class="section-shell" style="@(HideWhenEmpty ? "display:none;" : string.Empty)">
+    <div class="section-header">
+        <h2>@Title</h2>
+        @if (!string.IsNullOrWhiteSpace(Subtitle))
+        {
+            <p>@Subtitle</p>
+        }
+    </div>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public bool HideWhenEmpty { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

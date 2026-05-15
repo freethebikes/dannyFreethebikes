@@ -1,0 +1,277 @@
+@page "/admin"
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IProfileService ProfileService
+@inject IProjectService ProjectService
+@inject IPhotoService PhotoService
+@inject ISkillService SkillService
+@inject INoteService NoteService
+@inject ISiteSettingsService SiteSettingsService
+
+<PageTitle>Admin dashboard</PageTitle>
+
+@if (!authorized)
+{
+    <div class="spinner-shell">Checking admin access...</div>
+}
+else if (!AuthService.IsAuthenticated)
+{
+    <div class="auth-shell">
+        <div class="panel-block form-panel">
+            <h2>Admin access required</h2>
+            <p><a href="/admin/login">Sign in</a> before using the admin dashboard.</p>
+        </div>
+    </div>
+}
+else
+{
+    <AdminLayout>
+        <div class="admin-tabs">
+            <button class="tab-button @(activeTab == "profile" ? "active" : "")" @onclick="() => SelectTab("profile")">Profile</button>
+            <button class="tab-button @(activeTab == "projects" ? "active" : "")" @onclick="() => SelectTab("projects")">Projects</button>
+            <button class="tab-button @(activeTab == "photos" ? "active" : "")" @onclick="() => SelectTab("photos")">Photos</button>
+            <button class="tab-button @(activeTab == "skills" ? "active" : "")" @onclick="() => SelectTab("skills")">Skills</button>
+            <button class="tab-button @(activeTab == "notes" ? "active" : "")" @onclick="() => SelectTab("notes")">Notes</button>
+            <button class="tab-button @(activeTab == "settings" ? "active" : "")" @onclick="() => SelectTab("settings")">Settings</button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="message success">@message</div>
+        }
+
+        @if (activeTab == "profile")
+        {
+            <div class="panel-block">
+                <h2>Profile</h2>
+                <ProfileEditor Profile="profile" OnSaved="OnProfileSaved" />
+            </div>
+        }
+        else if (activeTab == "projects")
+        {
+            <div class="panel-block">
+                <h2>Projects</h2>
+                <button class="secondary" @onclick="CreateProject">New project</button>
+                <ProjectEditor Project="editingProject" OnSaved="OnProjectSaved" OnDeleted="OnProjectDeleted" OnCancel="ClearProjectEditor" />
+                <div class="admin-list">
+                    @foreach (var project in projects.OrderBy(p => p.SortOrder))
+                    {
+                        <div class="admin-item">
+                            <div>
+                                <strong>@project.Title</strong>
+                                <span class="meta">@project.Status</span>
+                            </div>
+                            <div class="actions">
+                                <button class="secondary" @onclick="() => EditProject(project)">Edit</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else if (activeTab == "photos")
+        {
+            <div class="panel-block">
+                <h2>Photos</h2>
+                <button class="secondary" @onclick="CreatePhoto">New photo</button>
+                <PhotoEditor Photo="editingPhoto" OnSaved="OnPhotoSaved" OnDeleted="OnPhotoDeleted" OnCancel="ClearPhotoEditor" />
+                <div class="admin-list">
+                    @foreach (var photo in photos.OrderBy(p => p.SortOrder))
+                    {
+                        <div class="admin-item">
+                            <div>
+                                <strong>@photo.Title</strong>
+                                <span class="meta">@photo.Category</span>
+                            </div>
+                            <div class="actions">
+                                <button class="secondary" @onclick="() => EditPhoto(photo)">Edit</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else if (activeTab == "skills")
+        {
+            <div class="panel-block">
+                <h2>Skills</h2>
+                <button class="secondary" @onclick="CreateSkill">New skill</button>
+                <SkillEditor Skill="editingSkill" OnSaved="OnSkillSaved" OnDeleted="OnSkillDeleted" OnCancel="ClearSkillEditor" />
+                <div class="admin-list">
+                    @foreach (var skill in skills.OrderBy(s => s.SortOrder))
+                    {
+                        <div class="admin-item">
+                            <div>
+                                <strong>@skill.Name</strong>
+                                <span class="meta">@skill.Category</span>
+                            </div>
+                            <div class="actions">
+                                <button class="secondary" @onclick="() => EditSkill(skill)">Edit</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else if (activeTab == "notes")
+        {
+            <div class="panel-block">
+                <h2>Notes</h2>
+                <button class="secondary" @onclick="CreateNote">New note</button>
+                <NoteEditor Note="editingNote" OnSaved="OnNoteSaved" OnDeleted="OnNoteDeleted" OnCancel="ClearNoteEditor" />
+                <div class="admin-list">
+                    @foreach (var note in notes.OrderByDescending(n => n.Date))
+                    {
+                        <div class="admin-item">
+                            <div>
+                                <strong>@note.Title</strong>
+                                <span class="meta">@note.Date:yyyy-MM-dd</span>
+                            </div>
+                            <div class="actions">
+                                <button class="secondary" @onclick="() => EditNote(note)">Edit</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else if (activeTab == "settings")
+        {
+            <div class="panel-block">
+                <h2>Site settings</h2>
+                <SettingsEditor Settings="siteSettings" OnSaved="OnSettingsSaved" />
+            </div>
+        }
+    </AdminLayout>
+}
+
+@code {
+    private bool authorized;
+    private string activeTab = "profile";
+    private string? message;
+    private Profile profile = new();
+    private SiteSettings siteSettings = new();
+    private List<Project> projects = new();
+    private List<Photo> photos = new();
+    private List<Skill> skills = new();
+    private List<Note> notes = new();
+    private Project editingProject = new();
+    private Photo editingPhoto = new();
+    private Skill editingSkill = new();
+    private Note editingNote = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        authorized = true;
+
+        if (!AuthService.IsAuthenticated)
+        {
+            return;
+        }
+
+        await LoadAdminData();
+    }
+
+    private async Task LoadAdminData()
+    {
+        profile = await ProfileService.GetProfileAsync();
+        siteSettings = await SiteSettingsService.GetSettingsAsync();
+        projects = await ProjectService.GetAdminProjectsAsync();
+        photos = await PhotoService.GetAdminPhotosAsync();
+        skills = await SkillService.GetAdminSkillsAsync();
+        notes = await NoteService.GetAdminNotesAsync();
+    }
+
+    private void SelectTab(string tab)
+    {
+        activeTab = tab;
+        message = null;
+    }
+
+    private void CreateProject() => editingProject = new Project { Id = Guid.NewGuid(), Published = false, SortOrder = projects.Count + 1 };
+    private void EditProject(Project project) => editingProject = project with { };
+    private void ClearProjectEditor() => editingProject = new();
+
+    private async Task OnProjectSaved(Project project)
+    {
+        await ProjectService.SaveProjectAsync(project);
+        message = "Project saved.";
+        await LoadAdminData();
+    }
+
+    private async Task OnProjectDeleted(Project project)
+    {
+        await ProjectService.DeleteProjectAsync(project.Id);
+        message = "Project deleted.";
+        await LoadAdminData();
+    }
+
+    private void CreatePhoto() => editingPhoto = new Photo { Id = Guid.NewGuid(), Published = false, SortOrder = photos.Count + 1 };
+    private void EditPhoto(Photo photo) => editingPhoto = photo with { };
+    private void ClearPhotoEditor() => editingPhoto = new();
+
+    private async Task OnPhotoSaved(Photo photo)
+    {
+        await PhotoService.SavePhotoAsync(photo);
+        message = "Photo saved.";
+        await LoadAdminData();
+    }
+
+    private async Task OnPhotoDeleted(Photo photo)
+    {
+        await PhotoService.DeletePhotoAsync(photo.Id);
+        message = "Photo deleted.";
+        await LoadAdminData();
+    }
+
+    private void CreateSkill() => editingSkill = new Skill { Id = Guid.NewGuid(), Published = false, SortOrder = skills.Count + 1 };
+    private void EditSkill(Skill skill) => editingSkill = skill with { };
+    private void ClearSkillEditor() => editingSkill = new();
+
+    private async Task OnSkillSaved(Skill skill)
+    {
+        await SkillService.SaveSkillAsync(skill);
+        message = "Skill saved.";
+        await LoadAdminData();
+    }
+
+    private async Task OnSkillDeleted(Skill skill)
+    {
+        await SkillService.DeleteSkillAsync(skill.Id);
+        message = "Skill deleted.";
+        await LoadAdminData();
+    }
+
+    private void CreateNote() => editingNote = new Note { Id = Guid.NewGuid(), Published = false, Date = DateTime.UtcNow, SortOrder = notes.Count + 1 };
+    private void EditNote(Note note) => editingNote = note with { };
+    private void ClearNoteEditor() => editingNote = new();
+
+    private async Task OnNoteSaved(Note note)
+    {
+        await NoteService.SaveNoteAsync(note);
+        message = "Note saved.";
+        await LoadAdminData();
+    }
+
+    private async Task OnNoteDeleted(Note note)
+    {
+        await NoteService.DeleteNoteAsync(note.Id);
+        message = "Note deleted.";
+        await LoadAdminData();
+    }
+
+    private async Task OnProfileSaved(Profile updated)
+    {
+        await ProfileService.SaveProfileAsync(updated);
+        message = "Profile updated.";
+        await LoadAdminData();
+    }
+
+    private async Task OnSettingsSaved(SiteSettings settings)
+    {
+        await SiteSettingsService.SaveSettingsAsync(settings);
+        message = "Settings saved.";
+        await LoadAdminData();
+    }
+}

@@ -1,0 +1,62 @@
+@using FreethebikesSite.Models
+
+@if (Note?.Id == Guid.Empty)
+{
+    <p>Select a note or create a new journal entry.</p>
+}
+else
+{
+    <div class="form-panel">
+        <div class="form-field">
+            <label>Title</label>
+            <input @bind="Note.Title" />
+        </div>
+        <div class="form-field">
+            <label>Short note</label>
+            <textarea rows="2" @bind="Note.ShortNote"></textarea>
+        </div>
+        <div class="form-field">
+            <label>Long body</label>
+            <textarea rows="4" @bind="Note.Body"></textarea>
+        </div>
+        <div class="form-field">
+            <label>Tags</label>
+            <input @bind="Note.Tags" placeholder="field note, surf, rv" />
+        </div>
+        <div class="form-field">
+            <label>Date</label>
+            <input type="date" value="@Note.Date:yyyy-MM-dd" @onchange="OnDateChanged" />
+        </div>
+        <div class="form-field">
+            <label>Sort order</label>
+            <input type="number" @bind="Note.SortOrder" />
+        </div>
+        <div class="form-field checkbox-field">
+            <label><input type="checkbox" @bind="Note.Published" /> Published</label>
+        </div>
+        <div class="form-actions">
+            <button class="primary" @onclick="Save">Save</button>
+            <button class="secondary" @onclick="Cancel">Cancel</button>
+            <button class="secondary" @onclick="Delete" disabled="@Note.Id == Guid.Empty">Delete</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Note Note { get; set; } = new();
+    [Parameter] public EventCallback<Note> OnSaved { get; set; }
+    [Parameter] public EventCallback<Note> OnDeleted { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private Task Save() => OnSaved.InvokeAsync(Note);
+    private Task Cancel() => OnCancel.InvokeAsync();
+    private Task Delete() => OnDeleted.InvokeAsync(Note);
+
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var parsed))
+        {
+            Note = Note with { Date = parsed };
+        }
+    }
+}

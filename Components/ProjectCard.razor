@@ -1,0 +1,24 @@
+@using FreethebikesSite.Models
+
+<div class="project-card">
+    <div class="card-content">
+        <h3>@Project.Title</h3>
+        <p class="small-text">@Project.Status</p>
+        <p>@Project.ShortDescription</p>
+        <p class="small-text">@Project.Tags</p>
+        <div class="tag-row">
+            @if (!string.IsNullOrWhiteSpace(Project.ProjectUrl))
+            {
+                <a class="secondary" href="@Project.ProjectUrl" target="_blank">Live</a>
+            }
+            @if (!string.IsNullOrWhiteSpace(Project.GitHubUrl))
+            {
+                <a class="secondary" href="@Project.GitHubUrl" target="_blank">Code</a>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Project Project { get; set; } = new();
+}

@@ -1,0 +1,22 @@
+@using FreethebikesSite.Models
+
+<div class="section-shell hero-shell">
+    <div class="panel-block">
+        <div class="hero-copy">
+            <p class="small-text">@Settings.StatusText · @Settings.ModeText · @Settings.SignalText</p>
+            <h1>@Profile.Name</h1>
+            <p class="lead">@Profile.HeroIntro</p>
+            <p>@Profile.ShortBio</p>
+            <div class="hero-links">
+                <a class="secondary" href="mailto:@Profile.Email">Email</a>
+                <a class="secondary" href="@Profile.GitHubLink" target="_blank">GitHub</a>
+                <a class="secondary" href="@Profile.LinkedInLink" target="_blank">LinkedIn</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Profile Profile { get; set; } = new();
+    [Parameter] public SiteSettings Settings { get; set; } = new();
+}
