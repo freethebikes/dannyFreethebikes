@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using FreethebikesSite.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
