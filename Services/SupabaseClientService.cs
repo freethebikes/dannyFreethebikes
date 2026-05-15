@@ -35,7 +35,7 @@ public sealed class SupabaseClientService : ISupabaseClientService
         };
     }
 
-    public async Task<List<T>> GetAllAsync<T>(string table, string query = "")
+    public async Task<List<T>> GetAllAsync<T>(string table, string query = "") where T : class
     {
         if (!IsConfigured)
         {
@@ -53,13 +53,13 @@ public sealed class SupabaseClientService : ISupabaseClientService
         return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions) ?? new List<T>();
     }
 
-    public async Task<T?> GetSingleAsync<T>(string table, string query = "")
+    public async Task<T?> GetSingleAsync<T>(string table, string query = "") where T : class
     {
         var list = await GetAllAsync<T>(table, query);
         return list.FirstOrDefault();
     }
 
-    public async Task<T?> UpsertAsync<T>(string table, object item)
+    public async Task<T?> UpsertAsync<T>(string table, object item) where T : class
     {
         if (!IsConfigured)
         {
@@ -131,7 +131,7 @@ public sealed class SupabaseClientService : ISupabaseClientService
         }
     }
 
-    private List<T> GetFallbackRecords<T>(string table)
+    private List<T> GetFallbackRecords<T>(string table) where T : class
     {
         if (_fallbackStore.TryGetValue(table, out var records))
         {
@@ -141,7 +141,7 @@ public sealed class SupabaseClientService : ISupabaseClientService
         return new List<T>();
     }
 
-    private T? UpsertFallbackRecord<T>(string table, object item)
+    private T? UpsertFallbackRecord<T>(string table, object item) where T : class
     {
         if (!_fallbackStore.TryGetValue(table, out var records))
         {
