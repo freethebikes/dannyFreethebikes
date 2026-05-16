@@ -20,10 +20,20 @@ jobs:
         run: dotnet restore ./DannyFreethebikes.csproj
       - name: Build and publish
         run: dotnet publish ./DannyFreethebikes.csproj -c Release -o ./publish
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./publish/wwwroot
-          force_orphan: true
+      - name: Deploy to gh-pages branch
+        run: |
+          set -e
+          touch ./publish/wwwroot/.nojekyll
+          rm -rf /tmp/gh-pages
+          mkdir -p /tmp/gh-pages
+          cp -R ./publish/wwwroot/. /tmp/gh-pages/
+
+          cd /tmp/gh-pages
+          git init
+          git checkout -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "Deploy ${GITHUB_SHA}"
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git push --force origin gh-pages
